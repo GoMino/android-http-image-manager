@@ -100,6 +100,7 @@ public class HttpImageManager{
     private PausableThreadPoolExecutor mExecutor = new PausableThreadPoolExecutor(1, 4, 10, TimeUnit.SECONDS, new LinkedBlockingStack<Runnable>());
     private Set<LoadRequest> mActiveRequests = new HashSet<LoadRequest>();
     private BitmapFilter mFilter;
+    private static HttpImageManager sInstance = null;
 
     public static class LoadRequest {
     	
@@ -199,7 +200,7 @@ public class HttpImageManager{
     
 
     ////////HttpImageManager
-    public HttpImageManager (MemoryBitmapCache cache,  PersistedBitmapCache persistence ) {
+    private HttpImageManager (MemoryBitmapCache cache,  PersistedBitmapCache persistence ) {
         mCache = cache;
         mPersistence = persistence;
         if (mPersistence == null) {
@@ -209,11 +210,28 @@ public class HttpImageManager{
         mDefaults = new HashMap<Integer, Drawable>();
     }
 
-
-    public HttpImageManager ( PersistedBitmapCache persistence ) {
+    private HttpImageManager ( PersistedBitmapCache persistence ) {
         this(null, persistence);
     }
+    
+    public static HttpImageManager getInstance(){
+    	if(sInstance == null){
+    		throw new IllegalStateException(HttpImageManager.class.getSimpleName() + " should be initialized");
+    	}
+    	return sInstance;
+	}
 
+    public static void initialize(MemoryBitmapCache cache,  PersistedBitmapCache persistence){
+    	if (sInstance == null){
+			sInstance = new HttpImageManager(cache, persistence);
+		}
+    }
+    
+    public static void initialize( PersistedBitmapCache persistence ){
+    	if (sInstance == null){
+			sInstance = new HttpImageManager(persistence);
+		}
+    }
 
     public void setDecodingPixelConstraint (int max) {
         mMaxNumOfPixelsConstraint = max;
@@ -228,6 +246,9 @@ public class HttpImageManager{
     public void setBitmapMemoryCacheSize(int size){
     	if (mCache!=null){
     		mCache.setMaxSize(size);
+    		Log.e(TAG, "setBitmapMemoryCacheSize | max size setted : " + mCache.getMaxSize());
+    	}else{
+    		Log.e(TAG, "setBitmapMemoryCacheSize | max size not setted using default : " + mCache.getMaxSize() );
     	}
     }
     
@@ -461,7 +482,7 @@ public class HttpImageManager{
      */
     public void emptyCache () {
         if ( mCache != null) 
-            mCache .clear();
+            mCache.clear();
     }
 
 

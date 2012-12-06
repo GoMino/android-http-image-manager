@@ -22,7 +22,7 @@ public class MemoryBitmapCache implements BitmapCache{
     
     
     private static final String TAG = MemoryBitmapCache.class.getSimpleName();
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     
     private int mMaxSize;
     private HashMap<String, CacheEntry> mMap = new HashMap<String, CacheEntry> ();
@@ -54,7 +54,7 @@ public class MemoryBitmapCache implements BitmapCache{
     public synchronized void invalidate(String key){
         CacheEntry e = mMap.get(key);
         Bitmap data = e.data;
-        //data.recycle(); // we are only relying on GC to reclaim the memory
+        data.recycle(); // we are only relying on GC to reclaim the memory
         mMap.remove(key);
         if(DEBUG) Log.d(TAG, key + " is invalidated from the cache");
     }
@@ -110,10 +110,20 @@ public class MemoryBitmapCache implements BitmapCache{
         
         //if the number exceeds, move an item out 
         //to prevent the storage from increasing indefinitely.
+        
+        if(DEBUG)
+        	Log.e(TAG, "maxsize : " + mMaxSize);
+        
         if(mMap.size() >= mMaxSize) {
             String outkey = this.findItemToInvalidate();
+            
+            if(DEBUG)
+            	Log.e(TAG, "size : " + mMap.size() + "outkey : " + outkey);
+            
             this.invalidate(outkey);
         }
+        
+        
         
         mMap.put(key, res);
     }

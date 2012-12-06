@@ -1,6 +1,5 @@
 package testapp.activity;
 
-import android.httpimage.FileSystemPersistence;
 import android.httpimage.*;
 
 public class TestApplication extends android.app.Application {
@@ -13,8 +12,9 @@ public class TestApplication extends android.app.Application {
 		super.onCreate();
 
 		// init HttpImageManager manager.
-		mHttpImageManager = new HttpImageManager(HttpImageManager.createDefaultMemoryCache(), 
-				new FileSystemPersistence(BASEDIR));
+		
+		HttpImageManager.initialize(HttpImageManager.createDefaultMemoryCache(), new FileSystemPersistence(BASEDIR));
+		mHttpImageManager= HttpImageManager.getInstance();
 	}
 
 	

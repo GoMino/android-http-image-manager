@@ -57,7 +57,8 @@ public class MonitorProgressActivity extends Activity implements HttpImageManage
 				
 				mImageView.setImageBitmap(null);
 				
-				HttpImageManager imageManager = new HttpImageManager(new FileSystemPersistence(TestApplication.BASEDIR) );
+				HttpImageManager.initialize(new FileSystemPersistence(TestApplication.BASEDIR));
+				HttpImageManager imageManager = HttpImageManager.getInstance();
 				
 				//use filter to alter images obtained from network
 				imageManager.setBitmapFilter(new HttpImageManager.BitmapFilter() {
