@@ -54,7 +54,7 @@ public class MemoryBitmapCache implements BitmapCache{
     public synchronized void invalidate(String key){
         CacheEntry e = mMap.get(key);
         Bitmap data = e.data;
-        data.recycle(); // we are only relying on GC to reclaim the memory
+//        data.recycle(); // we are only relying on GC to reclaim the memory
         mMap.remove(key);
         if(DEBUG) Log.d(TAG, key + " is invalidated from the cache");
     }
