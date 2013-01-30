@@ -64,6 +64,7 @@ public class BitmapUtil {
             BitmapFactory.decodeByteArray(bytes, 0, bytes.length, option);
 
             option.inJustDecodeBounds = false;
+//            option.inPreferredConfig = Bitmap.Config.RGB_565;
             option.inSampleSize = computeSampleSize(option, UNCONSTRAINED, maxNumOfPixels);
             Log.e(TAG, "decodeByteArray | inSampleSize=" + option.inSampleSize);
 

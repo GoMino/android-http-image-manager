@@ -1,7 +1,9 @@
 package android.httpimage;
 
+import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -25,8 +27,8 @@ public class MemoryBitmapCache implements BitmapCache{
     private static final boolean DEBUG = true;
     
     private int mMaxSize;
-    private HashMap<String, CacheEntry> mMap = new HashMap<String, CacheEntry> ();
-    
+//    private Map<String, SoftReference<CacheEntry>> mMap = new ConcurrentHashMap<String, SoftReference<CacheEntry>> ();
+    private Map<String, CacheEntry> mMap = new ConcurrentHashMap<String, CacheEntry> ();
 
     /**
      * max number of resource this cache contains
@@ -52,9 +54,14 @@ public class MemoryBitmapCache implements BitmapCache{
     
     @Override
     public synchronized void invalidate(String key){
-        CacheEntry e = mMap.get(key);
-        Bitmap data = e.data;
-        data.recycle(); // we are only relying on GC to reclaim the memory
+//        SoftReference<CacheEntry> entry = mMap.get(key);
+        CacheEntry entry = mMap.get(key);
+//        if(entry.get() != null && !entry.isEnqueued()){
+        	// CacheEntry found in soft cache
+//        	CacheEntry e = entry.get();
+//            Bitmap data = e.data;
+//          data.recycle(); // we are only relying on GC to reclaim the memory
+//        }
         mMap.remove(key);
         if(DEBUG) Log.d(TAG, key + " is invalidated from the cache");
     }
@@ -70,19 +77,31 @@ public class MemoryBitmapCache implements BitmapCache{
     
     /**
      * If the cache storage is full, return an item to be removed. 
-     * 
+     * Will remove garbage collected items if some has been found while looking for eldest entry.
      * Default strategy:  oldest out: O(n)
      * 
      * @return item key
      */
     protected synchronized String findItemToInvalidate() {
+//        Map.Entry<String, SoftReference<CacheEntry>> out = null;
         Map.Entry<String, CacheEntry> out = null;
+//        for(Map.Entry<String, SoftReference<CacheEntry>> e : mMap.entrySet()){
         for(Map.Entry<String, CacheEntry> e : mMap.entrySet()){
-            if( out == null || e.getValue().timestamp < out.getValue().timestamp) {
+
+//          	if( e.getValue().get() == null ||  e.getValue().isEnqueued()){
+//        		//item has been garbage collected
+//        		invalidate(e.getKey());
+//        		continue;
+//        	}
+          	
+//        	CacheEntry candidate = e.getValue().get();
+        	CacheEntry candidate = e.getValue();
+//            if( out == null || (out.getValue().get()!=null && candidate.timestamp < out.getValue().get().timestamp) ) {
+            if( out == null || (out.getValue()!=null && candidate.timestamp < out.getValue().timestamp) ) {
                 out = e;
             }
         }
-        return out.getKey();
+        return (out!=null)?out.getKey():null;
     }
 
     
@@ -91,10 +110,21 @@ public class MemoryBitmapCache implements BitmapCache{
         if(!exists(key)) {
             return null;
         }
+//        SoftReference<CacheEntry> softRef =  mMap.get(key);
+//        CacheEntry res = softRef.get();
         CacheEntry res = mMap.get(key);
-        res.nUsed++;
-        res.timestamp = System.currentTimeMillis();
-        return res.data;
+//        if(softRef.get() == null || softRef.isEnqueued()){
+        if(res == null){
+        	// Soft reference has been Garbage Collected
+        	invalidate(key);
+        	return null;
+        }else{
+        	// CacheEntry found in soft cache
+       	 	res.nUsed++;
+            res.timestamp = System.currentTimeMillis();
+            return res.data;
+        }
+       
     }
 
 
@@ -112,19 +142,20 @@ public class MemoryBitmapCache implements BitmapCache{
         //to prevent the storage from increasing indefinitely.
         
         if(DEBUG)
-        	Log.e(TAG, "maxsize : " + mMaxSize);
+        	Log.e(TAG, "maxsize : " + mMaxSize + " current size : " + mMap.size());
         
         if(mMap.size() >= mMaxSize) {
             String outkey = this.findItemToInvalidate();
             
             if(DEBUG)
-            	Log.e(TAG, "size : " + mMap.size() + "outkey : " + outkey);
+            	Log.e(TAG, "size : " + mMap.size() + " outkey : " + outkey);
             
             this.invalidate(outkey);
         }
         
         
         
+//        mMap.put(key, new SoftReference<CacheEntry>(res));
         mMap.put(key, res);
     }
 

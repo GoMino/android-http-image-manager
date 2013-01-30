@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -24,6 +25,8 @@ import org.apache.http.client.methods.HttpGet;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Bitmap.Config;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
@@ -84,11 +87,13 @@ import android.widget.ImageView;
 public class HttpImageManager{
 
     private static final String TAG = HttpImageManager.class.getSimpleName();
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
-    public static final int DEFAULT_CACHE_SIZE = 64;
-    public static final int UNCONSTRAINED = -1;
+    public static final int DEFAULT_CACHE_SIZE 			= 64;
+    public static final int UNCONSTRAINED 				= -1;
     public static final int DECODING_MAX_PIXELS_DEFAULT = 600 * 800;
+	public static final int SCRUB_FACTOR 				= 2;//scrub factor - bitmaps will be scrubbed down by a factor of this value (used for thumbnail)
+	
     
     private int mMaxNumOfPixelsConstraint = DECODING_MAX_PIXELS_DEFAULT;
     private MemoryBitmapCache mCache;
@@ -102,12 +107,20 @@ public class HttpImageManager{
     private BitmapFilter mFilter;
     private static HttpImageManager sInstance = null;
 
+    public static interface OnLoadResponseListener {
+        public void onLoadResponse(LoadRequest r, Bitmap data);
+        public void onLoadProgress(LoadRequest r, long totalContentSize, long loadedContentSize);
+        public void onLoadError(LoadRequest r, Throwable e);
+    }
+    
     public static class LoadRequest {
     	
         private Uri mUri;
         private String mHashedUri;
         private OnLoadResponseListener mListener;
         private ImageView mImageView;
+        private Boolean mIsAnimated;
+        private Boolean mIsThumbnailed;
         
         public LoadRequest (Uri uri) {
             this(uri, null, null);
@@ -125,13 +138,21 @@ public class HttpImageManager{
 
 
         public LoadRequest(Uri uri, ImageView v, OnLoadResponseListener l){
+        	this( uri, v, false, false, l);
+        }
+        
+        public LoadRequest(Uri uri, ImageView v, boolean isThumbnailed, boolean isAnimated, OnLoadResponseListener l){
             if(uri == null) 
                 throw new NullPointerException("uri must not be null");
 
             mUri = uri;
-            mHashedUri = computeHashedName(uri.toString());
             mImageView = v;
             mListener = l;
+            mIsAnimated = isAnimated;
+            mIsThumbnailed = isThumbnailed;
+//            mHashedUri = computeHashedName(uri.toString());
+//            mHashedUri = uri.toString();
+            mHashedUri = Integer.toString(uri.hashCode());
         }
 
 
@@ -154,7 +175,14 @@ public class HttpImageManager{
         public int hashCode() {
             return mUri.hashCode();
         }
-
+ 
+        public boolean isAnimated(){
+        	return this.mIsAnimated;
+        }
+        
+        public boolean isThumbnailed(){
+        	return this.mIsThumbnailed;
+        }
 
         @Override 
         public boolean equals(Object b){
@@ -171,22 +199,17 @@ public class HttpImageManager{
                 digest.update(name.getBytes());
                 
                 byte[] result = digest.digest();
-                return String.format("%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
-                        result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7],
-                        result[8],result[9], result[10], result[11],result[12], result[13], result[14], result[15]);
+                BigInteger i = new BigInteger(1,result);
+                return String.format("%1$032x", i); 
+//                return String.format("%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
+//                        result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7],
+//                        result[8],result[9], result[10], result[11],result[12], result[13], result[14], result[15]);
             } 
             catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException(e);
             }
         }
 
-    }
-
-
-    public static interface OnLoadResponseListener {
-        public void onLoadResponse(LoadRequest r, Bitmap data);
-        public void onLoadProgress(LoadRequest r, long totalContentSize, long loadedContentSize);
-        public void onLoadError(LoadRequest r, Throwable e);
     }
 
     
@@ -293,13 +316,14 @@ public class HttpImageManager{
         }
 
         String key = r.getHashedUri();
-
         if(mCache != null && mCache.exists(key)) {
             Bitmap bitmap = mCache.loadData(key);
             if (bitmap != null) {
 //			      setImageBitmapWithFade(iv, bitmap);
 			      iv.setImageBitmap(bitmap);
 			}
+         // callback listener if any
+            fireLoadResponse(r, bitmap);
             return bitmap;
         }
         else { 
@@ -324,13 +348,21 @@ public class HttpImageManager{
                             if(DEBUG)  Log.d(TAG, "give up loading: " + request.getUri().toString());
                             return;
                         }else{
-//                    		//try to get ImageView Background
-//                			Drawable imageDrawable = iv.getDrawable();
-//                			if(imageDrawable!=null){
-//                				
-////                				Drawable defaultBitmap = drawableToBitmap(imageDrawable);
-//                				iv.setImageDrawable(imageDrawable);
-//                			}
+                    		//try to get ImageView Background
+                			final Drawable imageDrawable = iv.getDrawable();
+                			if(imageDrawable!=null){
+                				
+                				final Bitmap defaultBitmap = drawableToBitmap(imageDrawable);
+                				mHandler.post(new Runnable() {
+									
+									@Override
+									public void run() {
+										iv.setImageBitmap(defaultBitmap);
+//		                				iv.setImageDrawable(imageDrawable);
+									}
+								});
+                				
+                			}
                         }
                     }
                 }
@@ -395,8 +427,14 @@ public class HttpImageManager{
                                     
                                     long contentSize = entity.getContentLength();
                                     binary = readInputStreamProgressively(responseStream, (int)contentSize, request);
-                                    data = BitmapUtil.decodeByteArray(binary, mMaxNumOfPixelsConstraint);
-//                                    data = BitmapFactory.decodeByteArray(binary, 0, binary.length);
+//                                    if(request.isThumbnailed()){
+//                                    	BitmapFactory.Options opt = new BitmapFactory.Options();				//get a scrubbed version of this bitmap
+//                            			opt.inSampleSize = SCRUB_FACTOR;				    
+//                                    	data = BitmapFactory.decodeByteArray(binary, 0, binary.length, opt);
+//                                    }else{
+                                    	data = BitmapUtil.decodeByteArray(binary, mMaxNumOfPixelsConstraint);
+//                                    }
+//                                    
                                 } 
                                 finally {
                                     if(responseStream != null) {
@@ -425,7 +463,8 @@ public class HttpImageManager{
                                 mCache.storeData(key, data);
 
                             // persist it. Save the file as-is, preserving the format.
-                            mPersistence.storeData(key, binary);
+                            if(binary!=null)
+                            	mPersistence.storeData(key, binary);
                         }
                     }
 
@@ -448,8 +487,11 @@ public class HttpImageManager{
                                 			}
                                         	
                                         	if(DEBUG) Log.e(TAG, "setImageBitmapWithFade for request " + request.getUri());
-                                        	setImageBitmapWithFade(iv, finalData);
-//                                            iv.setImageBitmap(finalData);
+                                        	if(request.isAnimated())
+                                        		setImageBitmapWithFade(iv, finalData);
+                                        	else{
+                                        		iv.setImageBitmap(finalData);
+                                        	}
                                         }
                                     }
                                 });
@@ -462,7 +504,8 @@ public class HttpImageManager{
                 }
                 catch (Throwable e) {
                     fireLoadFailure(request, e);
-                    if(DEBUG) Log.e(TAG, "error handling request " + request.getUri(), e);
+//                    if(DEBUG) 
+                    	Log.e(TAG, "error handling request " + request.getUri(), e);
                 }
                 finally{
                     synchronized (mActiveRequests) {
@@ -647,7 +690,9 @@ public class HttpImageManager{
 			mDefaults.put(resourceId, imageView.getResources().getDrawable(resourceId));
 		}
 		drawable = mDefaults.get(resourceId);
-		Log.e(TAG, "PickupDefaultImage for " + resourceId + " : " + drawable);
+//		if(DEBUG){
+			Log.e(TAG, "PickupDefaultImage for " + resourceId + " : " + drawable);
+//		}
 		imageView.setImageDrawable(drawable);
 	}
 	
@@ -719,5 +764,18 @@ public class HttpImageManager{
 		}
         
 		return options;
+	}
+	
+	public static Bitmap drawableToBitmap (Drawable drawable) {
+	    if (drawable instanceof BitmapDrawable) {
+	        return ((BitmapDrawable)drawable).getBitmap();
+	    }
+
+	    Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Config.ARGB_8888);
+	    Canvas canvas = new Canvas(bitmap); 
+	    drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+	    drawable.draw(canvas);
+
+	    return bitmap;
 	}
 }
