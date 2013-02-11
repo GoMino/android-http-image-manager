@@ -89,7 +89,7 @@ import android.widget.ImageView;
 public class HttpImageManager{
 
     private static final String TAG = HttpImageManager.class.getSimpleName();
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     public static final int DEFAULT_CACHE_SIZE 			= 64;
     public static final int UNCONSTRAINED 				= -1;
@@ -351,20 +351,20 @@ public class HttpImageManager{
                             return;
                         }else{
                     		//try to get ImageView Background
-                			final Drawable imageDrawable = iv.getDrawable();
-                			if(imageDrawable!=null){
-                				
-                				final Bitmap defaultBitmap = drawableToBitmap(imageDrawable);
-                				mHandler.post(new Runnable() {
-									
-									@Override
-									public void run() {
-										iv.setImageBitmap(defaultBitmap);
-//		                				iv.setImageDrawable(imageDrawable);
-									}
-								});
-                				
-                			}
+//                			final Drawable imageDrawable = iv.getDrawable();
+//                			if(imageDrawable!=null && !mActiveRequests.contains(request)){
+//                				final Bitmap defaultBitmap = drawableToBitmap(imageDrawable);
+//                				if(DEBUG) Log.e(TAG, "postAtFrontOfQueue for " + iv.getTag());
+                				//TODO should not post here if a request is already pending for this url and imageview
+//                				mHandler.postAtFrontOfQueue(new Runnable() {
+//									
+//									@Override
+//									public void run() {
+//										if(DEBUG) Log.e(TAG, "setImageBitmap for " + iv.getTag());
+//										iv.setImageBitmap(defaultBitmap);
+//									}
+//								});
+//                			}
                         }
                     }
                 }
@@ -378,6 +378,32 @@ public class HttpImageManager{
                     }
 
                     mActiveRequests.add(request);
+                }
+                
+                //Trying to get ImageView Background
+                if(request.getImageView() != null) {
+                    final ImageView iv = request.getImageView();
+                    synchronized ( iv ) {
+                        if ( iv.getTag() == request.getUri() ) {
+    
+                			final Drawable imageDrawable = iv.getDrawable();
+                			if(imageDrawable!=null && !mActiveRequests.contains(request)){
+                				
+                				final Bitmap defaultBitmap = drawableToBitmap(imageDrawable);
+                				if(DEBUG) Log.e(TAG, "postAtFrontOfQueue for " + iv.getTag());
+                				mHandler.postAtFrontOfQueue(new Runnable() {
+									
+									@Override
+									public void run() {
+										if(DEBUG) Log.e(TAG, "setImageBitmap for " + iv.getTag());
+										iv.setImageBitmap(defaultBitmap);
+//		                				iv.setImageDrawable(imageDrawable);
+									}
+								});
+                				
+                			}
+                        }
+                    }
                 }
 
                 Bitmap data = null;
@@ -481,12 +507,12 @@ public class HttpImageManager{
                                     public void run() {
                                         if ( iv.getTag() == request.getUri()) {
                                         	
-                                			Drawable imageDrawable = iv.getDrawable();
-                                			if(imageDrawable!=null){
-                                				
-//                                				Drawable defaultBitmap = drawableToBitmap(imageDrawable);
-                                				iv.setImageDrawable(imageDrawable);
-                                			}
+//                                			Drawable imageDrawable = iv.getDrawable();
+//                                			if(imageDrawable!=null){
+//                                				
+////                                				Drawable defaultBitmap = drawableToBitmap(imageDrawable);
+//                                				iv.setImageDrawable(imageDrawable);
+//                                			}
                                         	
                                         	if(DEBUG) Log.e(TAG, "setImageBitmapWithFade for request " + request.getUri());
                                         	if(request.isAnimated())
@@ -693,9 +719,7 @@ public class HttpImageManager{
 			mDefaults.put(resourceId, imageView.getResources().getDrawable(resourceId));
 		}
 		drawable = mDefaults.get(resourceId);
-//		if(DEBUG){
-			Log.e(TAG, "PickupDefaultImage for " + resourceId + " : " + drawable);
-//		}
+		if(DEBUG) Log.e(TAG, "PickupDefaultImage for " + resourceId + " : " + drawable);
 		imageView.setImageDrawable(drawable);
 	}
 	
