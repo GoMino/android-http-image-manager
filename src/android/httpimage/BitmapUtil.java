@@ -64,6 +64,7 @@ public class BitmapUtil {
             BitmapFactory.decodeByteArray(bytes, 0, bytes.length, option);
 
             option.inJustDecodeBounds = false;
+            option.inPreferredConfig = (HttpImageManager.keepAlpha)?Bitmap.Config.ARGB_8888:Bitmap.Config.RGB_565;
 //            option.inPreferredConfig = Bitmap.Config.RGB_565;
             option.inSampleSize = computeSampleSize(option, UNCONSTRAINED, maxNumOfPixels);
             Log.e(TAG, "decodeByteArray | inSampleSize=" + option.inSampleSize);
@@ -71,8 +72,8 @@ public class BitmapUtil {
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, option);
 
         } catch (OutOfMemoryError oom) {
-
             Log.w(TAG, oom);
+//            HttpImageManager.getInstance().emptyCache();
             return null;
         }
     }

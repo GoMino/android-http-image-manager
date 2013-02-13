@@ -90,6 +90,7 @@ public class HttpImageManager{
 
     private static final String TAG = HttpImageManager.class.getSimpleName();
     private static final boolean DEBUG = true;
+    public static boolean keepAlpha = false;
 
     public static final int DEFAULT_CACHE_SIZE 			= 64;
     public static final int UNCONSTRAINED 				= -1;
