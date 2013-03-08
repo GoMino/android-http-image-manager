@@ -89,7 +89,7 @@ import android.widget.ImageView;
 public class HttpImageManager{
 
     private static final String TAG = HttpImageManager.class.getSimpleName();
-    private static final boolean DEBUG = true;
+    public static boolean DEBUG = true;
     public static boolean keepAlpha = false;
 
     public static final int DEFAULT_CACHE_SIZE 			= 64;
@@ -356,7 +356,7 @@ public class HttpImageManager{
 //                			if(imageDrawable!=null && !mActiveRequests.contains(request)){
 //                				final Bitmap defaultBitmap = drawableToBitmap(imageDrawable);
 //                				if(DEBUG) Log.e(TAG, "postAtFrontOfQueue for " + iv.getTag());
-                				//TODO should not post here if a request is already pending for this url and imageview
+////                				TODO should not post here if a request is already pending for this url and imageview
 //                				mHandler.postAtFrontOfQueue(new Runnable() {
 //									
 //									@Override

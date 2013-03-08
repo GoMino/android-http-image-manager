@@ -9,7 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @author gomino (amine.bezzarga@labgency.com)
  */
-class PausableThreadPoolExecutor extends ThreadPoolExecutor {
+public class PausableThreadPoolExecutor extends ThreadPoolExecutor {
 	private boolean isPaused;
 	private ReentrantLock pauseLock = new ReentrantLock();
 	private Condition unpaused = pauseLock.newCondition();
