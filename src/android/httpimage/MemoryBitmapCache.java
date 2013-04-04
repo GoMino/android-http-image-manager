@@ -13,6 +13,7 @@ import android.util.Log;
  * Basic implementation of BitmapCache 
  * 
  * @author zonghai@gmail.com
+ * @author abezzarg@gmail.com
  */
 public class MemoryBitmapCache implements BitmapCache{
     
@@ -24,7 +25,7 @@ public class MemoryBitmapCache implements BitmapCache{
     
     
     private static final String TAG = MemoryBitmapCache.class.getSimpleName();
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     
     private int mMaxSize;
 //    private Map<String, SoftReference<CacheEntry>> mMap = new ConcurrentHashMap<String, SoftReference<CacheEntry>> ();

@@ -29,7 +29,7 @@ public class BitmapUtil {
     private static final int UNCONSTRAINED = -1;
 
     private static String TAG = BitmapUtil.class.getSimpleName();
-    private static boolean DEBUG = true;
+    private static boolean DEBUG = false;
 
     public static double getRatio(InputStream is){
     	BitmapFactory.Options options = new BitmapFactory.Options();

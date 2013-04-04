@@ -3,7 +3,7 @@ package android.httpimage;
 import android.graphics.Bitmap;
 
 /**
- * @author gomino (amine.bezzarga@labgency.com)
+ * @author gomino (abezzarg@gmail.com)
  */
 abstract public class PersistedBitmapCache implements BitmapCache {
 	
