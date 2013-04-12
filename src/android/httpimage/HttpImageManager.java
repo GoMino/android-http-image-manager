@@ -272,9 +272,9 @@ public class HttpImageManager{
     public void setBitmapMemoryCacheSize(int size){
     	if (mCache!=null){
     		mCache.setMaxSize(size);
-    		Log.e(TAG, "setBitmapMemoryCacheSize | max size setted : " + mCache.getMaxSize());
+    		Log.d(TAG, "[setBitmapMemoryCacheSize] max size setted : " + mCache.getMaxSize());
     	}else{
-    		Log.e(TAG, "setBitmapMemoryCacheSize | max size not setted using default : " + mCache.getMaxSize() );
+    		Log.d(TAG, "[setBitmapMemoryCacheSize] max size not setted using default : " + mCache.getMaxSize() );
     	}
     }
     
@@ -348,7 +348,7 @@ public class HttpImageManager{
                     final ImageView iv = request.getImageView();
                     synchronized ( iv ) {
                         if ( iv.getTag() != request.getUri() ) {
-                            if(DEBUG)  Log.d(TAG, "give up loading: " + request.getUri().toString());
+                            if(DEBUG)  Log.d(TAG, "[newRequestCall] give up loading: " + request.getUri().toString());
                             return;
                         }else{
                     		//try to get ImageView Background
@@ -391,12 +391,12 @@ public class HttpImageManager{
                 			if(imageDrawable!=null && !mActiveRequests.contains(request)){
                 				
                 				final Bitmap defaultBitmap = drawableToBitmap(imageDrawable);
-                				if(DEBUG) Log.e(TAG, "postAtFrontOfQueue for " + iv.getTag());
+                				if(DEBUG) Log.v(TAG, "[newRequestCall] postAtFrontOfQueue for " + iv.getTag());
                 				mHandler.postAtFrontOfQueue(new Runnable() {
 									
 									@Override
 									public void run() {
-										if(DEBUG) Log.e(TAG, "setImageBitmap for " + iv.getTag());
+										if(DEBUG) Log.v(TAG, "[newRequestCall] setImageBitmap for " + iv.getTag());
 										iv.setImageBitmap(defaultBitmap);
 //		                				iv.setImageDrawable(imageDrawable);
 									}
@@ -416,11 +416,11 @@ public class HttpImageManager{
                         data = mCache.loadData(key);
 
                     if(data == null) {
-                        if(DEBUG)  Log.d(TAG, "cache missing " + request.getUri().toString());
+                        if(DEBUG)  Log.d(TAG, "[newRequestCall] cache missing " + request.getUri().toString());
                         //then check the persistent storage
                         data = mPersistence.loadData(key);
                         if(data != null) {
-                            if(DEBUG)  Log.d(TAG, "found in persistent: " + request.getUri().toString());
+                            if(DEBUG)  Log.d(TAG, "[newRequestCall] found in persistent: " + request.getUri().toString());
                             
                             // load it into memory
                             if (mCache != null)
@@ -430,7 +430,7 @@ public class HttpImageManager{
                         }
                         else {
                             // we go to network
-                            if(DEBUG)  Log.d(TAG, "go to network " + request.getUri().toString());
+                            if(DEBUG)  Log.d(TAG, "[newRequestCall] go to network " + request.getUri().toString());
                             long millis = System.currentTimeMillis();
                             
                             byte[] binary = null;
@@ -439,7 +439,7 @@ public class HttpImageManager{
                             if(DEBUG) {
                                 Header[] headers = httpResp.getAllHeaders();
                                 for (Header header :headers) {
-                                    Log.i(TAG, header.toString());
+                                    Log.v(TAG, header.toString());
                                 }
                             }
 
@@ -475,8 +475,8 @@ public class HttpImageManager{
                             if(data == null) 
                                 throw new RuntimeException("data from remote can't be decoded to bitmap");
 
-                            if(DEBUG) Log.d(TAG, "decoded image: " + data.getWidth() + "x" + data.getHeight() );
-                            if(DEBUG) Log.d(TAG, "time consumed: " + (System.currentTimeMillis() - millis));
+                            if(DEBUG) Log.v(TAG, "[newRequestCall] decoded image: " + data.getWidth() + "x" + data.getHeight() );
+                            if(DEBUG) Log.v(TAG, "[newRequestCall] time consumed: " + (System.currentTimeMillis() - millis));
 
                             //apply filter(s)
                             if (mFilter != null) {
@@ -515,7 +515,7 @@ public class HttpImageManager{
 //                                				iv.setImageDrawable(imageDrawable);
 //                                			}
                                         	
-                                        	if(DEBUG) Log.e(TAG, "setImageBitmapWithFade for request " + request.getUri());
+                                        	if(DEBUG) Log.v(TAG, "[newRequestCall] setImageBitmapWithFade for request " + request.getUri());
                                         	if(request.isAnimated())
                                         		setImageBitmapWithFade(iv, finalData);
                                         	else{
@@ -534,7 +534,7 @@ public class HttpImageManager{
                 catch (Throwable e) {
                     fireLoadFailure(request, e);
 //                    if(DEBUG) 
-                    	Log.e(TAG, "error handling request " + request.getUri(), e);
+                    	Log.e(TAG, "[newRequestCall] error handling request " + request.getUri(), e);
                 }
                 finally{
                     synchronized (mActiveRequests) {
@@ -542,7 +542,7 @@ public class HttpImageManager{
                         mActiveRequests.notifyAll();  // wake up pending requests who's querying the same URL. 
                     }
 
-                    if (DEBUG) Log.d(TAG, "finished request for: " + request.getUri());
+                    if (DEBUG) Log.v(TAG, "[newRequestCall] finished request for: " + request.getUri());
                 }
             }
         };
@@ -614,7 +614,7 @@ public class HttpImageManager{
 
 
     private void fireLoadResponse(final LoadRequest r, final Bitmap image) {
-    	if(DEBUG) Log.e(TAG, "fireLoadResponse :" + r.getUri());
+    	if(DEBUG) Log.v(TAG, "[fireLoadResponse] " + r.getUri());
     	
         if ( r.mListener != null) {
             try {
@@ -624,13 +624,13 @@ public class HttpImageManager{
             	if(DEBUG) t.printStackTrace();
             }
         }else{
-        	if(DEBUG) Log.e(TAG, "fireLoadResponse :" + r.getUri() + " no listener");
+        	if(DEBUG) Log.e(TAG, "[fireLoadResponse] " + r.getUri() + " no listener");
         }
     }
 
 
     private void fireLoadProgress(final LoadRequest r, final long totalContentSize, final long loadedContentSize) {
-        if(DEBUG) Log.e(TAG, "fireLoadProgress :" + r.getUri());
+        if(DEBUG) Log.v(TAG, "[fireLoadProgress] " + r.getUri());
     	
     	if ( r.mListener != null) {
             try {
@@ -640,13 +640,13 @@ public class HttpImageManager{
             	if(DEBUG) t.printStackTrace();
             }
         }else{
-        	if(DEBUG) Log.e(TAG, "fireLoadProgress :" + r.getUri() + " no listener");
+        	if(DEBUG) Log.e(TAG, "[fireLoadProgress] " + r.getUri() + " no listener");
         }
     }
     
     
     private void fireLoadFailure(final LoadRequest r, final Throwable e) {
-    	if(DEBUG) Log.e(TAG, "fireLoadFailure :" + r.getUri());
+    	if(DEBUG) Log.e(TAG, "[fireLoadFailure] " + r.getUri());
     	
         if ( r.mListener != null) {
             try {
@@ -656,7 +656,7 @@ public class HttpImageManager{
             	if(DEBUG) t.printStackTrace();
             }
         }else{
-        	if(DEBUG) Log.e(TAG, "fireLoadFailure :" + r.getUri() + " no listener");
+        	if(DEBUG) Log.e(TAG, "[fireLoadFailure] " + r.getUri() + " no listener");
         }
     }
 
@@ -720,7 +720,7 @@ public class HttpImageManager{
 			mDefaults.put(resourceId, imageView.getResources().getDrawable(resourceId));
 		}
 		drawable = mDefaults.get(resourceId);
-		if(DEBUG) Log.e(TAG, "PickupDefaultImage for " + resourceId + " : " + drawable);
+		if(DEBUG) Log.v(TAG, "[PickupDefaultImage] for " + resourceId + " : " + drawable);
 		imageView.setImageDrawable(drawable);
 	}
 	

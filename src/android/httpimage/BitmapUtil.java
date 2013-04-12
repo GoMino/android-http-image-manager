@@ -67,7 +67,7 @@ public class BitmapUtil {
             option.inPreferredConfig = (HttpImageManager.keepAlpha)?Bitmap.Config.ARGB_8888:Bitmap.Config.RGB_565;
 //            option.inPreferredConfig = Bitmap.Config.RGB_565;
             option.inSampleSize = computeSampleSize(option, UNCONSTRAINED, maxNumOfPixels);
-            Log.e(TAG, "decodeByteArray | inSampleSize=" + option.inSampleSize);
+            Log.v(TAG, "[decodeByteArray] inSampleSize=" + option.inSampleSize);
 
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, option);
 

@@ -64,7 +64,7 @@ public class MemoryBitmapCache implements BitmapCache{
 //          data.recycle(); // we are only relying on GC to reclaim the memory
 //        }
         mMap.remove(key);
-        if(DEBUG) Log.d(TAG, key + " is invalidated from the cache");
+        if(DEBUG) Log.v(TAG,"[invalidate]" + key + " is invalidated from the cache");
     }
 
     
@@ -143,13 +143,13 @@ public class MemoryBitmapCache implements BitmapCache{
         //to prevent the storage from increasing indefinitely.
         
         if(DEBUG)
-        	Log.e(TAG, "maxsize : " + mMaxSize + " current size : " + mMap.size());
+        	Log.v(TAG, "[storeData] maxsize:" + mMaxSize + " current size:" + mMap.size());
         
         if(mMap.size() >= mMaxSize) {
             String outkey = this.findItemToInvalidate();
             
             if(DEBUG)
-            	Log.e(TAG, "size : " + mMap.size() + " outkey : " + outkey);
+            	Log.v(TAG, "[storeData] size : " + mMap.size() + " outkey : " + outkey);
             
             this.invalidate(outkey);
         }

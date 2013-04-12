@@ -84,7 +84,7 @@ public class FileSystemPersistence extends PersistedBitmapCache{
             outputStream.flush();
         }
         catch (IOException e) {
-            if(DEBUG) Log.e(TAG, "error storing bitmap", e);
+            if(DEBUG) Log.e(TAG, "[storeData] error storing bitmap", e);
         }
         finally {
             if(outputStream != null) {
@@ -143,7 +143,7 @@ public class FileSystemPersistence extends PersistedBitmapCache{
     }    
     
     public void deleteEntryOlderThan(final long DELETE_DELAY){
-    	Log.e(TAG, "image dir is : " + mBaseDir);
+    	Log.v(TAG, "[deleteEntryOlderThan] image dir is : " + mBaseDir);
     	new Thread(){
     		public void run(){
     			try{

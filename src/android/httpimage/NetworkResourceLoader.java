@@ -46,7 +46,7 @@ public class NetworkResourceLoader {
      * @throws IOException
      */
     public HttpResponse load (Uri uri) throws IOException{
-        if (DEBUG) Log.d(TAG, "Requesting: " + uri);
+        if (DEBUG) Log.v(TAG, "[load] Requesting: " + uri);
         HttpGet httpGet = new HttpGet(uri.toString());
         httpGet.addHeader("Accept-Encoding", "gzip");
         

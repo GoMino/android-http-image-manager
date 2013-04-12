@@ -38,7 +38,7 @@ public class DBPersistence extends PersistedBitmapCache{
         Bitmap bitmap = null;
         
         Uri image = Uri.withAppendedPath(DBImageTable.CONTENT_URI, key);
-        if (DEBUG) Log.d(TAG, "loaddata " + image.toString());
+        if (DEBUG) Log.v(TAG, "[loadData] " + image.toString());
         String[] returnCollums = new String[] {
             DBImageTable.DATA,
         };
@@ -47,7 +47,7 @@ public class DBPersistence extends PersistedBitmapCache{
         try {
             ContentResolver cr = mContext.getContentResolver();
             c = cr.query(image, returnCollums, null, null, null);
-            if (DEBUG) Log.d(TAG, "count=" + c.getCount());
+            if (DEBUG) Log.v(TAG, "[loadData] count=" + c.getCount());
             if(c.getCount() < 1) {
                 return null;
             }

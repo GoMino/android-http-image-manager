@@ -63,7 +63,7 @@ public class SyncHttpImageManagerWrapper {
             if ( mBitmap != null ) return mBitmap;
             while ( !mCompleted ) {
                 try {
-                    if(DEBUG)  Log.d(TAG, "waiting for the request to be completed ");
+                    if(DEBUG)  Log.v(TAG, "[syncLoadImage] waiting for the request to be completed ");
                     mLock .wait();
                 } catch (InterruptedException e1) {}
             }
