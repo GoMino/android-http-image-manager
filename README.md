@@ -1,5 +1,5 @@
 This is a simple library that can address most of the requirement of asynchronously dowloading, caching and managing network resource (images).
-It was originally forked from [here](https://github.com/zonghai-li/android-http-image-manager/blob/master/README.md), then modified to fix bug and add more features.
+It was originally forked from [here](https://github.com/zonghai-li/android-http-image-manager/blob/master/README.md), then modified to fix bugs and add more features.
 
 Loading an image is straightforward:
 

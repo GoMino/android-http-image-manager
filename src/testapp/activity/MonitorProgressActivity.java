@@ -1,6 +1,7 @@
 package testapp.activity;
 
 import testapp.activity.R.id;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
@@ -13,7 +14,6 @@ import android.httpimage.HttpImageManager.LoadRequest;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.app.Activity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -111,7 +111,7 @@ public class MonitorProgressActivity extends Activity implements HttpImageManage
 	public void onLoadProgress(LoadRequest r, final long totalContentSize,
 			final long loadedContentSize) {
 		
-		Log.d(TAG, "progress: " + loadedContentSize + "/" + totalContentSize);
+		if(BuildConfig.DEBUG)Log.d(TAG, "progress: " + loadedContentSize + "/" + totalContentSize);
 		
 		mHandler.post( new Runnable() {
 

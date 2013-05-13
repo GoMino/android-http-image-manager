@@ -1,7 +1,5 @@
 package android.httpimage;
 
-import java.lang.ref.SoftReference;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

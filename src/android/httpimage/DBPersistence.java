@@ -1,6 +1,5 @@
 package android.httpimage;
 
-
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;

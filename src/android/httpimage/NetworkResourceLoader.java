@@ -32,7 +32,7 @@ import android.util.Log;
  */
 public class NetworkResourceLoader {
     public static final String TAG = "NetworkResourceLoader";
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
 
     private HttpClient mHttpClient = createHttpClient();
 

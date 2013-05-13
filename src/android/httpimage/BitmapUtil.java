@@ -6,11 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.zip.GZIPInputStream;
-
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.HttpGet;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -67,12 +62,12 @@ public class BitmapUtil {
             option.inPreferredConfig = (HttpImageManager.keepAlpha)?Bitmap.Config.ARGB_8888:Bitmap.Config.RGB_565;
 //            option.inPreferredConfig = Bitmap.Config.RGB_565;
             option.inSampleSize = computeSampleSize(option, UNCONSTRAINED, maxNumOfPixels);
-            Log.v(TAG, "[decodeByteArray] inSampleSize=" + option.inSampleSize);
+            if(DEBUG) Log.v(TAG, "[decodeByteArray] inSampleSize=" + option.inSampleSize);
 
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, option);
 
         } catch (OutOfMemoryError oom) {
-            Log.w(TAG, oom);
+        	if(DEBUG) Log.w(TAG, oom);
 //            HttpImageManager.getInstance().emptyCache();
             return null;
         }
@@ -87,7 +82,7 @@ public class BitmapUtil {
             return decodeByteArray( readStream(is), maxNumOfPixels);
 
         } catch (IOException e) {
-            Log.w(TAG, e);
+        	if(BuildConfig.DEBUG)Log.w(TAG, e);
             return null;
         }
     }
@@ -101,7 +96,7 @@ public class BitmapUtil {
             return decodeByteArray(readStream(fis), maxNumOfPixels);
 
         } catch (IOException e) {
-            Log.w(TAG, e);
+        	if(DEBUG) Log.w(TAG, e);
             return null;
         }
         finally {

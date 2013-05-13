@@ -3,6 +3,7 @@ package android.httpimage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
 import android.graphics.Bitmap;
 import android.util.Log;
 
@@ -16,7 +17,7 @@ import android.util.Log;
 public class FileSystemPersistence extends PersistedBitmapCache{
 
     private static String TAG = FileSystemPersistence.class.getSimpleName();
-    private static boolean DEBUG = true;
+    private static boolean DEBUG = false;
     
     private String mBaseDir;
     

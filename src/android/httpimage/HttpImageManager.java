@@ -2,32 +2,28 @@ package android.httpimage;
 
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
 
 import android.annotation.TargetApi;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Bitmap.Config;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
@@ -89,7 +85,7 @@ import android.widget.ImageView;
 public class HttpImageManager{
 
     private static final String TAG = HttpImageManager.class.getSimpleName();
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
     public static boolean keepAlpha = false;
 
     public static final int DEFAULT_CACHE_SIZE 			= 64;
@@ -272,9 +268,9 @@ public class HttpImageManager{
     public void setBitmapMemoryCacheSize(int size){
     	if (mCache!=null){
     		mCache.setMaxSize(size);
-    		Log.d(TAG, "[setBitmapMemoryCacheSize] max size setted : " + mCache.getMaxSize());
+    		if(DEBUG)Log.d(TAG, "[setBitmapMemoryCacheSize] max size setted : " + mCache.getMaxSize());
     	}else{
-    		Log.d(TAG, "[setBitmapMemoryCacheSize] max size not setted using default : " + mCache.getMaxSize() );
+    		if(DEBUG)Log.d(TAG, "[setBitmapMemoryCacheSize] max size not setted using default : " + mCache.getMaxSize() );
     	}
     }
     

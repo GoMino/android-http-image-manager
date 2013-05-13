@@ -17,7 +17,7 @@ import android.httpimage.HttpImageManager.LoadRequest;
 public class SyncHttpImageManagerWrapper {
 
     private static final String TAG = "SyncHttpImageManagerWrapper";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
 
     public SyncHttpImageManagerWrapper(HttpImageManager mgr) {
