@@ -82,7 +82,7 @@ public class BitmapUtil {
             return decodeByteArray( readStream(is), maxNumOfPixels);
 
         } catch (IOException e) {
-        	if(BuildConfig.DEBUG)Log.w(TAG, e);
+        	if(DEBUG)Log.w(TAG, e);
             return null;
         }
     }
